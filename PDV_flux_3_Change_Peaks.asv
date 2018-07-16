@@ -110,6 +110,7 @@ if h.peaks_bool==1
     handles.main_GUI_data.velocity{n} = new_velocity;
     plot_int_cp(hObject,eventdata,handles);
     [handles.main_GUI_data.pressure{n},handles.main_GUI_data.flux{n},handles.main_GUI_data.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
+    handles.main_GUI_data.displacement{n} = new_displacement;
     guidata(hObject,handles);
     plot_int_cp(hObject,eventdata,handles);
 end
@@ -139,12 +140,12 @@ if h.peaks_bool==1
     [~,idx] = min(abs(xvals-x_rm));
     h.xyPeaks{n}{j}(idx,:) = [];
     handles.main_GUI_data.xyPeaks{n}{j} = h.xyPeaks{n}{j};
-    [new_time,new_velocity] = vel_recalc(hObject,eventdata,handles);
+    [new_time,new_velocity,new_displacement] = vel_recalc(hObject,eventdata,handles);
     handles.main_GUI_data.lineout_time{n} = new_time;
     handles.main_GUI_data.velocity{n} = new_velocity;
     plot_int_cp(hObject,eventdata,handles);
     [handles.main_GUI_data.pressure{n},handles.main_GUI_data.flux{n},handles.main_GUI_data.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
-    handles.main_GUI_data.displacement{n} = recalc_disp(hObject,eventdata,handles);
+    handles.main_GUI_data.displacement{n} = new_displacement;
     guidata(hObject,handles);
     
 end
@@ -274,33 +275,43 @@ close(PDV_flux_3_Change_Peaks);
         new_velocity(3:end) = x;
         
         %recalculate displacement
-        displacement1=cell(length(xPeaks{1}(:,1)),1);
-        displacement2=cell(length(xPeaks{2}(:,1)),1);
-        displacement3=cell(length(xPeaks{3}(:,1)),1);
+        displacement1=cell(length(xPeaks{1}),1);
+        displacement2=cell(length(xPeaks{2}),1);
+        displacement3=cell(length(xPeaks{3}),1);
         [~, minimum_index] = min(h.phase{n});
         time = h.time{n};
+        
+        for i=1:length(new_time)
+            if i==1
+                new_velocity(i) = new_velocity(i);
+            elseif lineout_time(i)<time(minimum_index)
+                new_velocity(i) = new_velocity(i);
+            else
+                new_velocity(i) = -1*new_velocity(i);
+            end
+        end
         for i=1:length(xPeaks{1}(:,1))
             if i==1
                 displacement1{i}=(1.55/(4*h.window_val));
-            elseif xPeaks{1}(i,1) < time(minimum_index)
+            elseif xPeaks{1}(i) < time(minimum_index)
                 displacement1{i}=displacement1{i-1}+(1.55/(4*h.window_val));
             else
                 displacement1{i}=displacement1{i-1}-(1.55/(4*h.window_val));
             end
         end
-        for i=1:length(xPeaks{2}(:,1))
+        for i=1:length(xPeaks{2})
             if i==1
                 displacement2{i}=(1.55/(4*h.window_val));
-            elseif xPeaks{2}(i,1) < time(minimum_index)
+            elseif xPeaks{2}(i) < time(minimum_index)
                 displacement2{i}=displacement2{i-1}+(1.55/(4*h.window_val));
             else
                 displacement2{i}=displacement2{i-1}-(1.55/(4*h.window_val));
             end
         end
-        for i=1:length(xPeaks{3}(:,1))
+        for i=1:length(xPeaks{3})
             if i==1
                 displacement3{i}=(1.55/(4*h.window_val));
-            elseif xPeaks{3}(i,1) < time(minimum_index)
+            elseif xPeaks{3}(i) < time(minimum_index)
                 displacement3{i}=displacement3{i-1}+(1.55/(4*h.window_val));
             else
                 displacement3{i}=displacement3{i-1}-(1.55/(4*h.window_val));
@@ -390,6 +401,15 @@ function [pressure,flux,fluence] = calc_derived_data(hObject,eventdata,handles)
         displacement3=cell(length(xPeaks{3}(:,1)),1);
         [~, minimum_index] = min(h.phase{n});
         time = h.time{n};
+         for i=1:length(new_time)
+            if i==1
+                new_velocity(i) = new_velocity(i);
+            elseif lineout_time(i)<time(minimum_index)
+                new_velocity(i) = new_velocity(i);
+            else
+                new_velocity(i) = -1*new_velocity(i);
+            end
+        end
         for i=1:length(xPeaks{1}(:,1))
             if i==1
                 displacement1{i}=(1.55/(4*h.window_val));

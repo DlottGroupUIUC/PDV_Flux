@@ -172,7 +172,10 @@ for i = 1:handles.file_count
         handles.fnames{handles.list_idx});
     switch handles.method
         case 1
+             handles.phase{i} = phase_analysis(handles.camp{i});
             [handles.lineout_time{i},handles.velocity{i}] = STFT_analysis(hObject,eventdata,handles);
+            [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
+            handles.peaks_bool =0;
         case 2
             handles.phase{i} = phase_analysis(handles.camp{i});
             [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
@@ -680,6 +683,17 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
                     velocity_lineout_fit(i) = 0;
                 end
             end
+            [~, minimum_index] = min(handles.phase{n});
+
+for i=1:length(lineout_time)
+    if i==1
+        velocity_lineout_fit(i) = velocity_lineout_fit(i);
+    elseif lineout_time(i)<time(minimum_index)
+        velocity_lineout_fit(i) = velocity_lineout_fit(i);
+    else
+        velocity_lineout_fit(i) = -1*velocity_lineout_fit(i);
+    end
+end
             
          
             
@@ -734,6 +748,16 @@ displacement1=cell(length(xPeaks{1}),1);
 displacement2=cell(length(xPeaks{2}),1);
 displacement3=cell(length(xPeaks{3}),1);
 [~, minimum_index] = min(handles.phase{n});
+
+for i=1:length(lineout_time)
+    if i==1
+        velocity_final(i) = velocity_final(i);
+    elseif lineout_time(i)<time(minimum_index)
+        velocity_final(i) = velocity_final(i);
+    else
+        velocity_final(i) = -1*velocity_final(i);
+    end
+end
 for i=1:length(xPeaks{1})
     if i==1
         displacement1{i}=(1.55/(4*1.0627));
@@ -1187,19 +1211,19 @@ tAbsolute=-z+12;    %time correction offset
             if handles.calc_bool ==1
                 switch handles.plot_idx
                     case 1 %velocity
-                        plot(handles.lineout_time{n},handles.velocity{n},'.b'); ylim([0,4]);
+                        plot(handles.lineout_time{n},handles.velocity{n},'.b');
                         xlabel('time (ns)');ylabel('velocity (km/s)');
                     case 2 %Pressure
                         plot(handles.lineout_time{n},handles.pressure{n},'.g');
-                        xlabel('time (ns)');ylabel('pressure (GPa)'); ylim([0,30]);
+                        xlabel('time (ns)');ylabel('pressure (GPa)'); 
                     case 3 %Flux
                         plot(handles.lineout_time{n},handles.flux{n},'.c');
-                        xlabel('time (ns)');ylabel('flux (TJ/m-s'); ylim([0,30]);
+                        xlabel('time (ns)');ylabel('flux (TJ/m-s'); 
                     case 4 %Fluence
                         plot(handles.lineout_time{n},handles.fluence{n},'.k');
-                        xlabel('time (ns)');ylabel('fluence (kJ/m^2)'); ylim([0,300]);
+                        xlabel('time (ns)');ylabel('fluence (kJ/m^2)');
                     case 5 %Displacement
-                        plot(handles.lineout_time{n},handles.displacement{n},'.r'); ylim([0,300]);
+                        plot(handles.lineout_time{n},handles.displacement{n},'.r');
                         xlabel('time (ns)');ylabel('displacement (um)');
                 end
                 update_timing_box(hObject,eventdata,handles);
@@ -1226,21 +1250,22 @@ tAbsolute=-z+12;    %time correction offset
                 new_ltime = handles.lineout_time{n}-handles.time{n}(handles.t0{n});
                 switch handles.plot_idx
                     case 1 %velocity
-                        plot(new_ltime,handles.velocity{n},'.b'); ylim([0,4]);
+                        plot(new_ltime,handles.velocity{n},'.b'); 
                         xlabel('time (ns)');ylabel('velocity (km/s)');
                     case 2 %Pressure
                         plot(new_ltime,handles.pressure{n},'.g');
-                        xlabel('time (ns)');ylabel('pressure (GPa)');ylim([0,50]);
+                        xlabel('time (ns)');ylabel('pressure (GPa)');
                     case 3 %Flux
                         plot(new_ltime,handles.flux{n},'.c'); 
-                        xlabel('time (ns)');ylabel('flux (TJ/m-s'); ylim([0,30]);
+                        xlabel('time (ns)');ylabel('flux (TJ/m-s'); 
                     case 4 %Fluence
                         plot(new_ltime,handles.fluence{n},'.k');
-                        xlabel('time (ns)');ylabel('fluence (kJ/m^2)'); ylim([0,300]);
+                        xlabel('time (ns)');ylabel('fluence (kJ/m^2)'); 
                     case 5 %Displacement
-                        plot(new_ltime,handles.displacement{n},'.r'); ylim([0,300]);
+                        plot(new_ltime,handles.displacement{n},'.r'); 
                         xlabel('time (ns)');ylabel('displacement (um)');
                 end
+                update_timing_box(hObject,eventdata,handles);
             else
                 cla(handles.lineout_axes);
                 handles.current_message = 'No velocity calculated yet';

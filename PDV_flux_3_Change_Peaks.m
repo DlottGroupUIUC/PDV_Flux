@@ -280,6 +280,16 @@ close(PDV_flux_3_Change_Peaks);
         displacement3=cell(length(xPeaks{3}),1);
         [~, minimum_index] = min(h.phase{n});
         time = h.time{n};
+        
+        for i=1:length(new_time)
+            if i==1
+                new_velocity(i) = new_velocity(i);
+            elseif new_time(i)<time(minimum_index)
+                new_velocity(i) = new_velocity(i);
+            else
+                new_velocity(i) = -1*new_velocity(i);
+            end
+        end
         for i=1:length(xPeaks{1}(:,1))
             if i==1
                 displacement1{i}=(1.55/(4*h.window_val));
@@ -391,6 +401,7 @@ function [pressure,flux,fluence] = calc_derived_data(hObject,eventdata,handles)
         displacement3=cell(length(xPeaks{3}(:,1)),1);
         [~, minimum_index] = min(h.phase{n});
         time = h.time{n};
+        
         for i=1:length(xPeaks{1}(:,1))
             if i==1
                 displacement1{i}=(1.55/(4*h.window_val));
