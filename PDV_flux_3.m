@@ -107,6 +107,7 @@ end
 %At this point we cand delete old data
 Delete_Old_Data(hObject,eventdata,handles);
 handles.fpath = fpath; handles.fnames = fnames; handles.file_count = length(fnames);
+set(handles.files_listbox,'Value',1); 
 set(handles.files_listbox,'String',[handles.fnames']);
 handles.list_idx = handles.file_count;
 handles.current_message = '';
@@ -683,7 +684,7 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
                     velocity_lineout_fit(i) = 0;
                 end
             end
-            [~, minimum_index] = min(handles.phase{n});
+            [~, minimum_index] = min(handles.phase{handles.list_idx});
 
 for i=1:length(lineout_time)
     if i==1
@@ -1042,29 +1043,34 @@ tAbsolute=-z+12;    %time correction offset
         time_lineout = handles.lineout_time{n};
         fluence(j,1) = 0;
         pressure(j,1)=0;
+        x = 1;
+        [~,minimum_index] = min(handles.phase{n});
         switch handles.sample_ID
             case 1
             rho = 2.230;
         while i<length(velocity_lineout_fit)
             j=j+1;
+            if time_lineout(i)> time_lineout(minimum_index)
+                        x = -1;
+            end
             if abs(velocity_lineout_fit(i,1)) <= 0.568
                 m = 1.861;%% note: these are specific to GLASS, from the glass hugoniot --> that is why the constants change for different velocities 
                 b = 3.879;
                 flux(j,1)=find_flux(m,b,rho,velocity_lineout_fit(i,1));% the flux is = force * dA , where A is area 
                 pressure((j),1)=find_pressure(m,b,rho,velocity_lineout_fit((i),1));
-                fluence(j,1)=fluence((j-1),1)+trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
+                fluence(j,1)=fluence((j-1),1)+x*trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
             elseif abs(velocity_lineout_fit(i,1)) > 1.83
                 m = 1.269;
                 b = 2.3925;
                 flux(j,1)=find_flux(m,b,rho,velocity_lineout_fit(i,1)); 
                 pressure((j),1)=find_pressure(m,b,rho,velocity_lineout_fit((i),1));
-                fluence(j,1)=fluence((j-1),1)+trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
+                fluence(j,1)=fluence((j-1),1)+x*trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
             else 
                 m = -0.175;
                 b = 5.0344; 
                 flux(j,1)=find_flux(m,b,rho,velocity_lineout_fit(i,1));% the flux is = force * dA , where A is area 
                 pressure((j),1)=find_pressure(m,b,rho,velocity_lineout_fit((i),1));
-                fluence(j,1)=fluence((j-1),1)+trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
+                fluence(j,1)=fluence((j-1),1)+x*trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
             end 
             i=i+1;
         end
@@ -1072,18 +1078,24 @@ tAbsolute=-z+12;    %time correction offset
                 rho = 1.125; m = 1.64; b = 1.65;
                 while i<length(velocity_lineout_fit)
                     j=j+1;
+                    if time_lineout(i)> time_lineout(minimum_index)
+                        x = -1;
+                    end
                     flux(j,1) = find_flux(m,b,rho,velocity_lineout_fit(i,1));
                     pressure(j,1) = find_pressure(m,b,rho,velocity_lineout_fit(i,1));
-                    fluence(j,1) = fluence((j-1),1)+trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
+                    fluence(j,1) = fluence((j-1),1)+x*trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
                     i = i+1;
                 end
             case 3 %Sapphire
                 rho = 4.0; m = 0.957; b = 8.74;
                 while i<length(velocity_lineout_fit)
                     j=j+1;
+                    if time_lineout(i)> time_lineout(minimum_index)
+                        x = -1;
+                    end
                     flux(j,1) = find_flux(m,b,rho,velocity_lineout_fit(i,1));
                     pressure(j,1) = find_pressure(m,b,rho,velocity_lineout_fit(i,1));
-                    fluence(j,1) = fluence((j-1),1)+trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
+                    fluence(j,1) = fluence((j-1),1)+x*trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
                     i = i+1;
                 end
             case 4 %CaF2
@@ -1091,9 +1103,12 @@ tAbsolute=-z+12;    %time correction offset
                 rho = 3.18; m = 1.18; b = 5.15;
                 while i<length(velocity_lineout_fit)
                     j=j+1;
+                    if time_lineout(i)> time_lineout(minimum_index)
+                        x = -1;
+                    end
                     flux(j,1) = find_flux(m,b,rho,velocity_lineout_fit(i,1));
                     pressure(j,1) = find_pressure(m,b,rho,velocity_lineout_fit(i,1));
-                    fluence(j,1) = fluence((j-1),1)+trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
+                    fluence(j,1) = fluence((j-1),1)+x*trapz(time_lineout((j-1):j,1),flux((j-1):j,1));
                     i = i+1;
                 end
         end
