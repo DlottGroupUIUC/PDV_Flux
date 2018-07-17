@@ -491,11 +491,17 @@ function [time,amplitude,t0,time_offset] = channel_read(fpath,fname,scope_offset
         rMS(i)=sqrt(s/(0.05*length(time)));
 
     end
+    
     i = 1;
     while (abs(amplitude(i,1)) < 5*rMS(1) || abs(amplitude(i,2)) < 5*rMS(2) && i < length(amplitude(:,1)))
     i = i+1;
     end
-    
+    amp  = amplitude(:,4);
+    amp(end+1:end+16) = zeros(1,16);
+    for j = 1:16
+        amp(j) = [];
+    end
+    amplitude(:,4) = amp;
     [maximum, maximum_index] = max(amplitude(:,3));
     time_vector = time(1:maximum_index);
     index90 = length(time_vector(time_vector<=maximum*0.9));
@@ -1333,7 +1339,10 @@ tAbsolute=-z+12;    %time correction offset
 
         function update_timing_box(hObject,eventdata,handles)
             n = handles.list_idx;
-            output_text = sprintf('Oscilloscope offset = %s \n First Rise Time = %s',string(handles.scope_offset), string(handles.time{n}(handles.t0{n})));
+            [~,min_idx] = min(handles.phase{n});
+            min_time = handles.time{n}(min_idx);
+            output_text = sprintf('Oscilloscope offset = %s \n First Rise Time = %s \n Phase Minimum = %s',string(handles.scope_offset),...
+                string(handles.time{n}(handles.t0{n})),string(min_time));
             set(handles.timing_info,'String',output_text);
 %% aggregate error handler
     function error_out  = exception_handler(error_in,hObject,eventdata,handles)
