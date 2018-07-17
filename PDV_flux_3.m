@@ -353,7 +353,7 @@ save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
 catch ME
-    exception_handler(hObject,eventdata,handles);
+    exception_handler(ME,hObject,eventdata,handles);
 end
 
 % --------------------------------------------------------------------
@@ -367,7 +367,7 @@ save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
 catch ME
-    exception_handler(hObject,eventdata,handles);
+    exception_handler(ME,hObject,eventdata,handles);
 end
 
 % --------------------------------------------------------------------
@@ -381,7 +381,7 @@ save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
 catch ME
-    exception_handler(hObject,eventdata,handles);
+    exception_handler(ME,hObject,eventdata,handles);
 end
 
 % --------------------------------------------------------------------
@@ -396,7 +396,7 @@ guidata(hObject,handles);
 handles.current_message = 'Data Saved';
 
 catch ME
-    exception_handler(hObject,eventdata,handles);
+    exception_handler(ME,hObject,eventdata,handles);
 end
 
 % --------------------------------------------------------------------
