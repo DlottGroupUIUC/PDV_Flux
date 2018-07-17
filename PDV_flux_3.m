@@ -1157,7 +1157,7 @@ tAbsolute=-z+12;    %time correction offset
             case 0
                 time = handles.lineout_time{i};
             case 1
-                time = handles.lineout_time{i}-handles.t0{i};
+                time = handles.lineout_time{i}-handles.time{i}(handles.t0{i});
         end
         curr_size = length(handles.lineout_time{i});
         save_data = [];
