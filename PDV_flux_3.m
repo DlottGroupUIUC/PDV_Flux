@@ -1079,7 +1079,7 @@ tAbsolute=-z+12;    %time correction offset
                 rho = 1.125; m = 1.64; b = 1.65;
                 while i<length(velocity_lineout_fit)
                     j=j+1;
-                    if time_lineout(i)> time_lineout(minimum_index)
+                    if time_lineout(i)> time(minimum_index)
                         x = -1;
                     end
                     flux(j,1) = find_flux(m,b,rho,velocity_lineout_fit(i,1));
@@ -1091,7 +1091,7 @@ tAbsolute=-z+12;    %time correction offset
                 rho = 4.0; m = 0.957; b = 8.74;
                 while i<length(velocity_lineout_fit)
                     j=j+1;
-                    if time_lineout(i)> time_lineout(minimum_index)
+                    if time_lineout(i)> time(minimum_index)
                         x = -1;
                     end
                     flux(j,1) = find_flux(m,b,rho,velocity_lineout_fit(i,1));
@@ -1104,7 +1104,7 @@ tAbsolute=-z+12;    %time correction offset
                 rho = 3.18; m = 1.18; b = 5.15;
                 while i<length(velocity_lineout_fit)
                     j=j+1;
-                    if time_lineout(i)> time_lineout(minimum_index)
+                    if time_lineout(i)> time(minimum_index)
                         x = -1;
                     end
                     flux(j,1) = find_flux(m,b,rho,velocity_lineout_fit(i,1));
