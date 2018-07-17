@@ -1039,6 +1039,7 @@ tAbsolute=-z+12;    %time correction offset
         i=1;
         j=1;
         n = handles.list_idx;
+        time = handles.time{n};
         velocity_lineout_fit = handles.velocity{n};
         time_lineout = handles.lineout_time{n};
         fluence(j,1) = 0;
@@ -1050,7 +1051,7 @@ tAbsolute=-z+12;    %time correction offset
             rho = 2.230;
         while i<length(velocity_lineout_fit)
             j=j+1;
-            if time_lineout(i)> time_lineout(minimum_index)
+            if time_lineout(i)> time(minimum_index)
                         x = -1;
             end
             if abs(velocity_lineout_fit(i,1)) <= 0.568
