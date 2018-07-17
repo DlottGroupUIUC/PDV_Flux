@@ -352,6 +352,7 @@ handles.save_type = 1;
 save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
+error('Allfunctions:NoError','No Error');
 catch ME
     exception_handler(ME,hObject,eventdata,handles);
 end
@@ -366,6 +367,7 @@ handles.save_type = 2;
 save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
+error('Allfunctions:NoError','No Error');
 catch ME
     exception_handler(ME,hObject,eventdata,handles);
 end
@@ -380,6 +382,7 @@ handles.save_type = 3;
 save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
+error('Allfunctions:NoError','No Error');
 catch ME
     exception_handler(ME,hObject,eventdata,handles);
 end
@@ -394,7 +397,7 @@ handles.save_type = 4;
 save_der_data(hObject,eventdata,handles)
 guidata(hObject,handles);
 handles.current_message = 'Data Saved';
-
+error('Allfunctions:NoError','No Error');
 catch ME
     exception_handler(ME,hObject,eventdata,handles);
 end
@@ -1154,7 +1157,7 @@ tAbsolute=-z+12;    %time correction offset
             case 0
                 time = handles.lineout_time{i};
             case 1
-                time = handles.lineout_time{i}-handles.t0{n};
+                time = handles.lineout_time{i}-handles.t0{i};
         end
         curr_size = length(handles.lineout_time{i});
         save_data = [];
