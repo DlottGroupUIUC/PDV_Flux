@@ -493,12 +493,18 @@ function [time,amplitude,t0,time_offset] = channel_read(fpath,fname,scope_offset
     end
     
     i = 1;
+    try
     while (abs(amplitude(i,1)) < 5*rMS(1) || abs(amplitude(i,2)) < 5*rMS(2) && i < length(amplitude(:,1)))
-    i = i+1;
+        i = i+1;
+    end
+    catch
+        axes(handles.interferogram_axes);
+        [x,~] = ginput(1);
+        [~,i] = min(abs(x-time));
     end
     amp  = amplitude(:,4);
-    amp(end+1:end+16) = zeros(1,16);
-    for j = 1:16
+    amp(end+1:end+5) = zeros(1,5);
+    for j = 1:5
         amp(j) = [];
     end
     amplitude(:,4) = amp;
