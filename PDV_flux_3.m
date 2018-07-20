@@ -502,12 +502,14 @@ function [time,amplitude,t0,time_offset] = channel_read(fpath,fname,scope_offset
         [x,~] = ginput(1);
         [~,i] = min(abs(x-time));
     end
+    %{
     amp  = amplitude(:,4);
     amp(end+1:end+5) = zeros(1,5);
     for j = 1:5
         amp(j) = [];
     end
     amplitude(:,4) = amp;
+    %}
     [maximum, maximum_index] = max(amplitude(:,3));
     time_vector = time(1:maximum_index);
     index90 = length(time_vector(time_vector<=maximum*0.9));
