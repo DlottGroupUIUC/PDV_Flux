@@ -6,17 +6,7 @@ function varargout = PDV_flux_3(varargin)
 %      H = PDV_FLUX_3 returns the handle to a new PDV_FLUX_3 or the handle to
 %      the existing singleton*.
 %
-%      PDV_FLUX_3('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in PDV_FLUX_3.M with the given input arguments.
-%
-%      PDV_FLUX_3('Property','Value',...) creates a new PDV_FLUX_3 or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before PDV_flux_3_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to PDV_flux_3_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
+%   n (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
