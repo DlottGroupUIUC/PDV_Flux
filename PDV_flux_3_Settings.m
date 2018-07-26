@@ -273,15 +273,15 @@ function window_menu_Callback(hObject, eventdata, handles)
 handles.main_GUI_data.window_material = get(hObject,'Value');
 switch get(hObject,'Value')
     case 1
-        handles.main_GUI_data.window_val = 1.065;
+        handles.main_GUI_data.window_val = 1.0627;
     case 2
-        handles.main_GUI_data.window_val = 1.7462;
+        handles.main_GUI_data.window_val = 1.7284;
     case 3
         handles.main_GUI_data.window_val = 1.25;
     case 4
-        handles.main_GUI_data.window_val = 1.3827;
+        handles.main_GUI_data.window_val = 1.2669;
     case 5
-        handles.main_GUI_data.window_val = 1.5278;
+        handles.main_GUI_data.window_val = 1.0765;
 end
 %Window material choice for PDV window correction. Changing these will
 %allow the correction factors to be input into the main function
