@@ -22,7 +22,7 @@ function varargout = PDV_flux_3_Change_Peaks(varargin)
 
 % Edit the above text to modify the response to help PDV_flux_3_Change_Peaks
 
-% Last Modified by GUIDE v2.5 08-Jul-2018 17:17:35
+% Last Modified by GUIDE v2.5 27-Jul-2018 16:55:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -243,7 +243,12 @@ close(PDV_flux_3_Change_Peaks);
         end
         
         xlabel('time (ns)');ylabel('volts (V)'); title(sprintf('%s: %s',name,handles.state));
-        xlim([h.time{n}(h.t0{n})-10,h.time{n}(h.t0{n})+100]);
+        switch get(handles.range_bool,'Value')
+            case 0
+                xlim([h.time{n}(h.t0{n})-10,h.time{n}(h.t0{n})+100]);
+            case 1
+                xlim([str2double(get(handles.init_time_edit,'String')),str2double(get(handles.final_time_edit,'String'))]);
+        end
         chan_txt = sprintf('Channel %d',j);
         if h.peaks_bool ==0
             legend(chan_txt);
@@ -447,3 +452,66 @@ function [pressure,flux,fluence] = calc_derived_data(hObject,eventdata,handles)
 %%function to calculate pressure given m,p,b,and vel
     function pressure = find_pressure(m,b,rho,velocity)
         pressure = rho*(b+m*velocity)*velocity;
+
+
+% --- Executes on button press in range_bool.
+function range_bool_Callback(hObject, eventdata, handles)
+% hObject    handle to range_bool (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of range_bool
+plot_int_cp(hObject,eventdata,handles);
+
+
+function init_time_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to init_time_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of init_time_edit as text
+%        str2double(get(hObject,'String')) returns contents of init_time_edit as a double
+switch get(handles.range_bool,'Value')
+    case 1
+        plot_int_cp(hObject,eventdata,handles);
+    otherwise
+end
+
+% --- Executes during object creation, after setting all properties.
+function init_time_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to init_time_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function final_time_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to final_time_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of final_time_edit as text
+%        str2double(get(hObject,'String')) returns contents of final_time_edit as a double
+switch get(handles.range_bool,'Value')
+    case 1
+        plot_int_cp(hObject,eventdata,handles);
+    otherwise
+end
+
+% --- Executes during object creation, after setting all properties.
+function final_time_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to final_time_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

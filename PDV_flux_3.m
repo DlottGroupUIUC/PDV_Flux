@@ -173,13 +173,12 @@ for i = 1:handles.file_count
             handles.peaks_bool =1;
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
+            update_plots(hObject,eventdata,handles);
     end
-    handles.velocity = cellfun(@(x) x/handles.window_val,handles.velocity,'UniformOutput',false);
-    handles.calc_bool =1;
-    guidata(hObject,handles);
-    update_plots(hObject,eventdata,handles);
 end
-
+handles.velocity = cellfun(@(x) x/handles.window_val,handles.velocity,'UniformOutput',false);
+handles.calc_bool =1;
+guidata(hObject,handles);
 handles.current_message = '';
 guidata(hObject,handles);
 error('Allfunctions:NoError','No Errors');
@@ -732,7 +731,7 @@ function [lineout_time,velocity_final,displacement_s,xyPeaks] = peak_det_3(hObje
     velocity0 = 0;
     XYMAT=sortrows([xPeaks{1},velocity{1};xPeaks{2},velocity{2};xPeaks{3},velocity{3};time(x0),velocity0]);
     velocityTime=XYMAT(:,1);
-    velocity_final=XYMAT(:,2)/handles.window_val;
+    velocity_final=XYMAT(:,2);
     x = smooth(velocity_final(3:end),3);
     velocity_final(3:end) = x;
     lineout_time = XYMAT(:,1);
