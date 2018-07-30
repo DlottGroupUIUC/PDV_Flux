@@ -12,7 +12,7 @@ function varargout = PDV_flux_3(varargin)
 
 % Edit the above text to modify the response to help PDV_flux_3
 
-% Last Modified by GUIDE v2.5 13-Jul-2018 14:56:21
+% Last Modified by GUIDE v2.5 30-Jul-2018 12:57:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -164,9 +164,10 @@ for i = 1:handles.file_count
     switch handles.method
         case 1
              handles.phase{i} = phase_analysis(handles.camp{i});
-            [handles.lineout_time{i},handles.velocity{i}] = STFT_analysis(hObject,eventdata,handles);
+            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i}] = STFT_analysis(hObject,eventdata,handles);
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             handles.peaks_bool =0;
+            update_plots(hObject,eventdata,handles);
         case 2
             handles.phase{i} = phase_analysis(handles.camp{i});
             [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
@@ -186,11 +187,28 @@ catch ME
     exception_handler(ME,hObject,eventdata,handles);
 end
 
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton2 (see GCBO)
+% --- Executes on button press in phase_min_button.
+function phase_min_button_Callback(hObject, eventdata, handles)
+% hObject    handle to phase_min_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+axes(handles.lineout_axes);
+n = handles.list_idx;
+[x,~] = ginput(1);
+switch handles.rise_t_bool
+    case 0
+        [~,handles.min_idx{n}] = min(abs(handles.time{n}-x));
+    case 1
+        [~,handles.min_idx{n}] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
+end
+[handles.velocity{n}] = update_phase_min(hObject,eventdata,handles);
+switch handles.rise_t_bool
+    case 0
+        update_plots(hObject,eventdata,handles);
+    case 1
+        update_plots_IM(hObject,eventdata,handles);
+end
+guidata(hObject,handles);
 
 
 % --- Executes on selection change in plot_type_list.
@@ -633,7 +651,8 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
     ypeak = {ypeak{1},ypeak{2},ypeak{3},ypeak{4}};
 %% Short time fourier transform analysis
 
-    function [lineout_time,velocity_lineout_fit] = STFT_analysis(hObject,eventdata,handles)
+    function [lineout_time,velocity_lineout_fit,minimum_index] = STFT_analysis(hObject,eventdata,handles)
+        n = handles.list_idx;
         time = handles.time{handles.list_idx};
         sample_frequency = (time(2)-time(1))*1e-9;
         sample_frequency = sample_frequency^(-1);
@@ -691,6 +710,7 @@ for i=1:length(lineout_time)
         velocity_lineout_fit(i) = -1*velocity_lineout_fit(i);
     end
 end
+guidata(hObject,handles);
             
          
             
@@ -1184,7 +1204,18 @@ tAbsolute=-z+12;    %time correction offset
     else
         error('SaveFunction:NoFiles', 'No files to save');
     end
-
+%%updating phase minimum
+        function new_velocity = update_phase_min(hObject,eventdata,figure1)
+            n = figure1.list_idx;
+            figure1.velocity{n} = abs(figure1.velocity{n});
+            for i = 1:length(figure1.velocity{n})
+                if figure1.lineout_time{n}(i)<figure1.time{n}(figure1.min_idx{n})
+                    figure1.velocity{n}(i) = figure1.velocity{n}(i);
+                else
+                    figure1.velocity{n}(i) = -1.*figure1.velocity{n}(i);
+                end
+            end
+            new_velocity = figure1.velocity{n};
         
 %% plots interferogram
     function int = plot_int(hObject,eventdata,handles)
@@ -1326,7 +1357,8 @@ tAbsolute=-z+12;    %time correction offset
 
         function update_timing_box(hObject,eventdata,handles)
             n = handles.list_idx;
-            [~,min_idx] = min(handles.phase{n});
+            %[~,min_idx] = min(handles.phase{n});
+            min_idx = handles.min_idx{n};
             min_time = handles.time{n}(min_idx);
             output_text = sprintf('Oscilloscope offset = %s \n First Rise Time = %s \n Phase Minimum = %s',string(handles.scope_offset),...
                 string(handles.time{n}(handles.t0{n})),string(min_time));
