@@ -164,7 +164,7 @@ for i = 1:handles.file_count
     switch handles.method
         case 1
              handles.phase{i} = phase_analysis(handles.camp{i});
-            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i},handles.displacement{i}] = STFT_analysis(hObject,eventdata,handles);
+            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i}] = STFT_analysis(hObject,eventdata,handles);
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             handles.peaks_bool =0;
             update_plots(hObject,eventdata,handles);
@@ -651,7 +651,7 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
     ypeak = {ypeak{1},ypeak{2},ypeak{3},ypeak{4}};
 %% Short time fourier transform analysis
 
-    function [lineout_time,velocity_lineout_fit,minimum_index,displacement] = STFT_analysis(hObject,eventdata,handles)
+    function [lineout_time,velocity_lineout_fit,minimum_index] = STFT_analysis(hObject,eventdata,handles)
         n = handles.list_idx;
         time = handles.time{handles.list_idx};
         sample_frequency = (time(2)-time(1))*1e-9;
@@ -700,14 +700,12 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
                 end
             end
             [~, minimum_index] = min(handles.phase{handles.list_idx});
-            displacement = [];
-for i = 1:length(lineout_time)
-    if lineout_time(i) < handles.time{n}(handles.t0{n})
+for i = handles.t0{n}:length(lineout_time)
+    if i==1
         displacement(i) = 0;
     else
         displacement(i) = displacement(i-1)+trapz(lineout_time(i-1:i),velocity_lineout_fit(i-1:i));
     end
-end
 for i=1:length(lineout_time)
     if i==1
         velocity_lineout_fit(i) = velocity_lineout_fit(i);
