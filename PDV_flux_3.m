@@ -1393,6 +1393,8 @@ tAbsolute=-z+12;    %time correction offset
             case 'Plotting:NoVelFile'
                 output_text = 'Velocity not calculated';
                 cla(handles.lineout_axes); 
+            case 'LISTBOX:NOFILE'
+                output_text = 'No file loaded';
             case 'MethodUpdate:Badmethod'
                 output_text = 'Bad method number';
             case 'RunData:NoData'
