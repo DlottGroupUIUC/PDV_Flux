@@ -165,19 +165,20 @@ for i = 1:handles.file_count
         case 1
              handles.phase{i} = phase_analysis(handles.camp{i});
             [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i},handles.displacement{i}] = STFT_analysis(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             handles.peaks_bool =0;
             update_plots(hObject,eventdata,handles);
         case 2
             handles.phase{i} = phase_analysis(handles.camp{i});
             [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
             handles.peaks_bool =1;
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
             update_plots(hObject,eventdata,handles);
     end
 end
-handles.velocity = cellfun(@(x) x/handles.window_val,handles.velocity,'UniformOutput',false);
 handles.calc_bool =1;
 guidata(hObject,handles);
 handles.current_message = '';
