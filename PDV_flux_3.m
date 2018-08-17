@@ -171,6 +171,7 @@ for i = 1:handles.file_count
             update_plots(hObject,eventdata,handles);
         case 2
             handles.phase{i} = phase_analysis(handles.camp{i});
+            [~,handles.min_idx{i}] = min(handles.phase{i});
             [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
             handles.velocity{i} = handles.velocity{i}./handles.window_val;
             handles.peaks_bool =1;
