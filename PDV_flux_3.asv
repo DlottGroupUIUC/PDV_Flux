@@ -164,20 +164,22 @@ for i = 1:handles.file_count
     switch handles.method
         case 1
              handles.phase{i} = phase_analysis(handles.camp{i});
-            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i}] = STFT_analysis(hObject,eventdata,handles);
+            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i},handles.displacement{i}] = STFT_analysis(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             handles.peaks_bool =0;
             update_plots(hObject,eventdata,handles);
         case 2
             handles.phase{i} = phase_analysis(handles.camp{i});
+            [~,handles.min_idx{i}] = min(handles.phase{i});
             [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
             handles.peaks_bool =1;
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
             update_plots(hObject,eventdata,handles);
     end
 end
-handles.velocity = cellfun(@(x) x/handles.window_val,handles.velocity,'UniformOutput',false);
 handles.calc_bool =1;
 guidata(hObject,handles);
 handles.current_message = '';
@@ -202,6 +204,8 @@ switch handles.rise_t_bool
         [~,handles.min_idx{n}] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
 end
 [handles.velocity{n}] = update_phase_min(hObject,eventdata,handles);
+[handles.pressure{n},handles.flux{n},handles.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
+[handles.displacement{n}] = update_displacement(hObject,eventdata,handles);
 switch handles.rise_t_bool
     case 0
         update_plots(hObject,eventdata,handles);
@@ -651,7 +655,7 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
     ypeak = {ypeak{1},ypeak{2},ypeak{3},ypeak{4}};
 %% Short time fourier transform analysis
 
-    function [lineout_time,velocity_lineout_fit,minimum_index] = STFT_analysis(hObject,eventdata,handles)
+    function [lineout_time,velocity_lineout_fit,minimum_index,displacement] = STFT_analysis(hObject,eventdata,handles)
         n = handles.list_idx;
         time = handles.time{handles.list_idx};
         sample_frequency = (time(2)-time(1))*1e-9;
@@ -700,12 +704,14 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
                 end
             end
             [~, minimum_index] = min(handles.phase{handles.list_idx});
-for i = handles.t0{n}:length(lineout_time)
-    if i==1
+            displacement = [];
+for i = 1:length(lineout_time)
+    if lineout_time(i) < handles.time{n}(handles.t0{n})
         displacement(i) = 0;
     else
         displacement(i) = displacement(i-1)+trapz(lineout_time(i-1:i),velocity_lineout_fit(i-1:i));
     end
+end
 for i=1:length(lineout_time)
     if i==1
         velocity_lineout_fit(i) = velocity_lineout_fit(i);
@@ -1224,7 +1230,79 @@ tAbsolute=-z+12;    %time correction offset
                 end
             end
             new_velocity = figure1.velocity{n};
-        
+            
+            function new_displacement = update_displacement(hObject,eventdata,handles)
+                n = handles.list_idx;
+                vel = handles.velocity{n};
+                l_time = handles.lineout_time{n};
+                phase_min = handles.phase_min{n};
+                switch peaks_bool
+                    case 0  %STFT USED
+                         new_displacement = [];
+                         for i = 1:length(l_time)
+                            if l_time(i) < handles.time{n}(handles.t0{n})
+                                new_displacement(i) = 0;
+                            else
+                                new_displacement(i) = displacement(i-1)+trapz(lineout_time(i-1:i),velocity_lineout_fit(i-1:i));
+                            end
+                        end
+                    case 1 %Peak finding used
+                        time = handles.time{n};
+                        xPeaks = handles.xyPeaks{n};
+                        xPeaks{1} = xPeaks{1}(:,1);xPeaks{2} = xPeaks{2}(:,1);xPeaks{3} = xPeaks{3}(:,1);
+                        displacement1=cell(length(xPeaks{1}),1);
+                        displacement2=cell(length(xPeaks{2}),1);
+                        displacement3=cell(length(xPeaks{3}),1);
+                        [~, minimum_index] = min(handles.phase{n});
+
+                        for i=1:length(l_time)
+                            if i==1
+                                vel(i) = velocity_final(i);
+                            elseif lineout_time(i)<time(minimum_index)
+                                velocity_final(i) = velocity_final(i);
+                            else
+                                velocity_final(i) = -1*velocity_final(i);
+                            end
+                        end
+                        for i=1:length(xPeaks{1})
+                            if i==1
+                                displacement1{i}=(1.55/(4*1.0627));
+                            elseif xPeaks{1}(i) < time(minimum_index)
+                                displacement1{i}=displacement1{i-1}+(1.55/(4*1.0627));
+                            else
+                                displacement1{i}=displacement1{i-1}-(1.55/(4*1.0627));
+                            end
+                        end
+                        for i=1:length(xPeaks{2})
+                            if i==1
+                                displacement2{i}=(1.55/(4*handles.window_val));
+                            elseif xPeaks{2}(i) < time(minimum_index)
+                                displacement2{i}=displacement2{i-1}+(1.55/(4*handles.window_val));
+                            else
+                                displacement2{i}=displacement2{i-1}-(1.55/(4*handles.window_val));
+                            end
+                        end
+                        for i=1:length(xPeaks{3})
+                            if i==1
+                                displacement3{i}=(1.55/(4*1.0627));
+                            elseif xPeaks{3}(i) < time(minimum_index)
+                                displacement3{i}=displacement3{i-1}+(1.55/(4*handles.window_val));
+                            else
+                                displacement3{i}=displacement3{i-1}-(1.55/(4*handles.window_val));
+                            end
+                        end
+                        displacement_c=cell(3,2);
+                        displacement_c{1,1}=xPeaks{1};displacement_c{2,1}=xPeaks{2};displacement_c{3,1}=xPeaks{3};
+                        displacement_c{1,2}=cell2mat(displacement1);displacement_c{2,2}=cell2mat(displacement2);displacement_c{3,2}=cell2mat(displacement3);
+                        displacement2c=cell2mat(displacement_c);
+                        displacement2c=sortrows(displacement2c);
+                        displacementTime = displacement2c(:,1);
+                        displacement=displacement2c(:,2);
+                        displacement_s=smooth(displacementTime,displacement,0.1,'rloess');
+                        displacement_s = [0;displacement_s];
+                        new_displacement = displacement_s;
+                end
+            
 %% plots interferogram
     function int = plot_int(hObject,eventdata,handles)
         n=handles.list_idx;
@@ -1391,6 +1469,8 @@ tAbsolute=-z+12;    %time correction offset
             case 'Plotting:NoVelFile'
                 output_text = 'Velocity not calculated';
                 cla(handles.lineout_axes); 
+            case 'LISTBOX:NOFILE'
+                output_text = 'No file loaded';
             case 'MethodUpdate:Badmethod'
                 output_text = 'Bad method number';
             case 'RunData:NoData'
@@ -1406,6 +1486,8 @@ tAbsolute=-z+12;    %time correction offset
         end
         set(handles.text_prompt,'String',output_text)
  
+        
+        
         
    %% References and acknowledgements    
  %{

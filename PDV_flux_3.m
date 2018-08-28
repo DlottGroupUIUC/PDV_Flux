@@ -204,6 +204,8 @@ switch handles.rise_t_bool
         [~,handles.min_idx{n}] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
 end
 [handles.velocity{n}] = update_phase_min(hObject,eventdata,handles);
+[handles.pressure{n},handles.flux{n},handles.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
+[handles.displacement{n}] = update_displacement(hObject,eventdata,handles);
 switch handles.rise_t_bool
     case 0
         update_plots(hObject,eventdata,handles);
@@ -1228,7 +1230,71 @@ tAbsolute=-z+12;    %time correction offset
                 end
             end
             new_velocity = figure1.velocity{n};
-        
+            
+            function new_displacement = update_displacement(hObject,eventdata,handles)
+                n = handles.list_idx;
+                vel = handles.velocity{n};
+                l_time = handles.lineout_time{n};
+               
+                switch handles.peaks_bool
+                    case 0  %STFT USED
+                         new_displacement = [];
+                         for i = 1:length(l_time)
+                            if l_time(i) < handles.time{n}(handles.t0{n})
+                                new_displacement(i) = 0;
+                            else
+                                new_displacement(i) = new_displacement(i-1)+trapz(l_time(i-1:i),vel(i-1:i));
+                            end
+                        end
+                    case 1 %Peak finding used
+                        time = handles.time{n};
+                        xPeaks = handles.xyPeaks{n};
+                        xPeaks{1} = xPeaks{1}(:,1);xPeaks{2} = xPeaks{2}(:,1);xPeaks{3} = xPeaks{3}(:,1);
+                        displacement1=cell(length(xPeaks{1}),1);
+                        displacement2=cell(length(xPeaks{2}),1);
+                        displacement3=cell(length(xPeaks{3}),1);
+                        [~, minimum_index] = min(handles.phase{n});
+
+                       
+                        for i=1:length(xPeaks{1})
+                            if i==1
+                                displacement1{i}=(1.55/(4*1.0627));
+                            elseif xPeaks{1}(i) < time(minimum_index)
+                                displacement1{i}=displacement1{i-1}+(1.55/(4*1.0627));
+                            else
+                                displacement1{i}=displacement1{i-1}-(1.55/(4*1.0627));
+                            end
+                        end
+                        for i=1:length(xPeaks{2})
+                            if i==1
+                                displacement2{i}=(1.55/(4*handles.window_val));
+                            elseif xPeaks{2}(i) < time(minimum_index)
+                                displacement2{i}=displacement2{i-1}+(1.55/(4*handles.window_val));
+                            else
+                                displacement2{i}=displacement2{i-1}-(1.55/(4*handles.window_val));
+                            end
+                        end
+                        for i=1:length(xPeaks{3})
+                            if i==1
+                                displacement3{i}=(1.55/(4*1.0627));
+                            elseif xPeaks{3}(i) < time(minimum_index)
+                                displacement3{i}=displacement3{i-1}+(1.55/(4*handles.window_val));
+                            else
+                                displacement3{i}=displacement3{i-1}-(1.55/(4*handles.window_val));
+                            end
+                        end
+                        displacement_c=cell(3,2);
+                        displacement_c{1,1}=xPeaks{1};displacement_c{2,1}=xPeaks{2};displacement_c{3,1}=xPeaks{3};
+                        displacement_c{1,2}=cell2mat(displacement1);displacement_c{2,2}=cell2mat(displacement2);displacement_c{3,2}=cell2mat(displacement3);
+                        displacement2c=cell2mat(displacement_c);
+                        displacement2c=sortrows(displacement2c);
+                        displacementTime = displacement2c(:,1);
+                        displacement=displacement2c(:,2);
+                        displacement_s=smooth(displacementTime,displacement,0.1,'rloess');
+                        displacement_s = [0;displacement_s];
+                        new_displacement = displacement_s;
+                end
+            
 %% plots interferogram
     function int = plot_int(hObject,eventdata,handles)
         n=handles.list_idx;
@@ -1412,6 +1478,8 @@ tAbsolute=-z+12;    %time correction offset
         end
         set(handles.text_prompt,'String',output_text)
  
+        
+        
         
    %% References and acknowledgements    
  %{
