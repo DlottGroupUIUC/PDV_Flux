@@ -12,7 +12,7 @@ function varargout = PDV_flux_3(varargin)
 
 % Edit the above text to modify the response to help PDV_flux_3
 
-% Last Modified by GUIDE v2.5 30-Jul-2018 12:57:43
+% Last Modified by GUIDE v2.5 28-Aug-2018 15:49:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -469,7 +469,30 @@ function save_timing_select_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
+% --- Executes on button press in reset_t0_button.
+function reset_t0_button_Callback(hObject, eventdata, handles)
+% hObject    handle to reset_t0_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+axes(handles.lineout_axes);
+n = handles.list_idx;
+[x,~] = ginput(1);
+switch handles.rise_t_bool
+    case 0
+        [~,new_t0] = min(abs(handles.time{n}-x));
+    case 1
+        [~,new_t0] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
+end
+handles.t0{n} = new_t0;
+[handles.pressure{n},handles.flux{n},handles.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
+[handles.displacement{n}] = update_displacement(hObject,eventdata,handles);
+switch handles.rise_t_bool
+    case 0
+        update_plots(hObject,eventdata,handles);
+    case 1
+        update_plots_IM(hObject,eventdata,handles);
+end
+guidata(hObject,handles);
 %%Begin subroutine section
 
 function [time,amplitude,t0,time_offset] = file_read(fpath,fnames,scope_offset)
@@ -1501,5 +1524,7 @@ tAbsolute=-z+12;    %time correction offset
         Chicago, 2012. doi:10.1063/1.3686313
    [4] J. W. Forbes. Shock Wave Compression of Condensed Matter
    %}
+
+
 
 
