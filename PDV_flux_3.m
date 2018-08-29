@@ -1270,52 +1270,7 @@ tAbsolute=-z+12;    %time correction offset
                             end
                         end
                     case 1 %Peak finding used
-                        time = handles.time{n};
-                        xPeaks = handles.xyPeaks{n};
-                        xPeaks{1} = xPeaks{1}(:,1);xPeaks{2} = xPeaks{2}(:,1);xPeaks{3} = xPeaks{3}(:,1);
-                        displacement1=cell(length(xPeaks{1}),1);
-                        displacement2=cell(length(xPeaks{2}),1);
-                        displacement3=cell(length(xPeaks{3}),1);
-                        [~, minimum_index] = min(handles.phase{n});
-
-                       
-                        for i=1:length(xPeaks{1})
-                            if i==1
-                                displacement1{i}=(1.55/(4*1.0627));
-                            elseif xPeaks{1}(i) < time(minimum_index)
-                                displacement1{i}=displacement1{i-1}+(1.55/(4*1.0627));
-                            else
-                                displacement1{i}=displacement1{i-1}-(1.55/(4*1.0627));
-                            end
-                        end
-                        for i=1:length(xPeaks{2})
-                            if i==1
-                                displacement2{i}=(1.55/(4*handles.window_val));
-                            elseif xPeaks{2}(i) < time(minimum_index)
-                                displacement2{i}=displacement2{i-1}+(1.55/(4*handles.window_val));
-                            else
-                                displacement2{i}=displacement2{i-1}-(1.55/(4*handles.window_val));
-                            end
-                        end
-                        for i=1:length(xPeaks{3})
-                            if i==1
-                                displacement3{i}=(1.55/(4*1.0627));
-                            elseif xPeaks{3}(i) < time(minimum_index)
-                                displacement3{i}=displacement3{i-1}+(1.55/(4*handles.window_val));
-                            else
-                                displacement3{i}=displacement3{i-1}-(1.55/(4*handles.window_val));
-                            end
-                        end
-                        displacement_c=cell(3,2);
-                        displacement_c{1,1}=xPeaks{1};displacement_c{2,1}=xPeaks{2};displacement_c{3,1}=xPeaks{3};
-                        displacement_c{1,2}=cell2mat(displacement1);displacement_c{2,2}=cell2mat(displacement2);displacement_c{3,2}=cell2mat(displacement3);
-                        displacement2c=cell2mat(displacement_c);
-                        displacement2c=sortrows(displacement2c);
-                        displacementTime = displacement2c(:,1);
-                        displacement=displacement2c(:,2);
-                        displacement_s=smooth(displacementTime,displacement,0.1,'rloess');
-                        displacement_s = [0;displacement_s];
-                        new_displacement = displacement_s;
+                        [~,~,new_displacement,~] = peak_det_3(hObject,eventdata,handles);
                 end
             
 %% plots interferogram
