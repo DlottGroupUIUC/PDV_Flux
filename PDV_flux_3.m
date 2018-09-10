@@ -204,8 +204,9 @@ switch handles.rise_t_bool
         [~,handles.min_idx{n}] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
 end
 [handles.pressure{n},handles.flux{n},handles.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
-[handles.pressure{n},handles.flux{n},handles.fluence{n},handles.displacement{n}] = update_derived_data(hObject,eventdata,handles);
 [handles.velocity{n}] = update_phase_min(hObject,eventdata,handles);
+
+
 
 switch handles.rise_t_bool
     case 0
@@ -732,8 +733,10 @@ function [xpeak,ypeak] = find_zeros(x,y,x0)
 for i = 1:length(lineout_time)
     if lineout_time(i) < handles.time{n}(handles.t0{n})
         displacement(i) = 0;
-    else
+    elseif lineout_time(i) < handles.time{n}(minimum_index)&& lineout_time(i)>handles.time{n}(handles.t0{n})
         displacement(i) = displacement(i-1)+trapz(lineout_time(i-1:i),velocity_lineout_fit(i-1:i));
+    elseif lineout_time(i) > handles.time{n}(minimum_index)
+        displacement(i) = displacement(i-1)-trapz(lineout_time(i-1:i),velocity_lineout_fit(i-1:i));
     end
 end
 for i=1:length(lineout_time)
@@ -1421,6 +1424,8 @@ tAbsolute=-z+12;    %time correction offset
             output_text = sprintf('Oscilloscope offset = %s \n First Rise Time = %s \n Phase Minimum = %s',string(handles.scope_offset),...
                 string(handles.time{n}(handles.t0{n})),string(min_time));
             set(handles.timing_info,'String',output_text);
+            fb_output = sprintf('Max Fluence = \n %f',max(handles.fluence{n}));
+            set(handles.mx_fluence_txt,'String',fb_output);
 %% aggregate error handler
     function error_out  = exception_handler(error_in,hObject,eventdata,handles)
         try
