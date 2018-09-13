@@ -203,8 +203,22 @@ switch handles.rise_t_bool
     case 1
         [~,handles.min_idx{n}] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
 end
-[handles.pressure{n},handles.flux{n},handles.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
-[handles.velocity{n}] = update_phase_min(hObject,eventdata,handles);
+i = n;
+    switch handles.method
+        case 1
+            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i},handles.displacement{i}] = STFT_analysis(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
+            [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
+            handles.peaks_bool =0;
+            update_plots(hObject,eventdata,handles);
+        case 2
+            [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
+            handles.peaks_bool =1;
+            [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
+            %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
+            update_plots(hObject,eventdata,handles);
+    end
 
 
 
@@ -486,8 +500,23 @@ switch handles.rise_t_bool
         [~,new_t0] = min(abs((handles.time{n}-handles.time{n}(handles.t0{n}))-x));
 end
 handles.t0{n} = new_t0;
-[handles.pressure{n},handles.flux{n},handles.fluence{n}] = calc_derived_data(hObject,eventdata,handles);
-[~,~,~,handles.displacement{n}] = update_derived_data(hObject,eventdata,handles);
+i = n;
+    switch handles.method
+        case 1
+            
+            [handles.lineout_time{i},handles.velocity{i},handles.min_idx{i},handles.displacement{i}] = STFT_analysis(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
+            [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
+            handles.peaks_bool =0;
+            update_plots(hObject,eventdata,handles);
+        case 2
+            [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
+            handles.velocity{i} = handles.velocity{i}./handles.window_val;
+            handles.peaks_bool =1;
+            [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
+            %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
+            update_plots(hObject,eventdata,handles);
+    end
 switch handles.rise_t_bool
     case 0
         update_plots(hObject,eventdata,handles);
@@ -799,13 +828,13 @@ function [lineout_time,velocity_final,displacement_s,xyPeaks] = peak_det_3(hObje
     new_time = time-velocityTime(1,1);
 for k = 1:3
 peakPositions1{k}(:,1) = peakPositions{k}(:,1)-velocityTime(1,1);
-xPeaks{k} = xPeaks{k} - velocityTime(1,1);
+xPeaks{k} = xPeaks{k};
 end
 
 displacement1=cell(length(xPeaks{1}),1);
 displacement2=cell(length(xPeaks{2}),1);
 displacement3=cell(length(xPeaks{3}),1);
-[~, minimum_index] = min(handles.phase{n});
+minimum_index = handles.min_idx{n};
 
 for i=1:length(lineout_time)
     if i==1
@@ -818,7 +847,7 @@ for i=1:length(lineout_time)
 end
 for i=1:length(xPeaks{1})
     if i==1
-        displacement1{i}=(1.55/(4*1.0627));
+        displacement1{i}=(1.55/(4*handles.window_val));
     elseif xPeaks{1}(i) < time(minimum_index)
         displacement1{i}=displacement1{i-1}+(1.55/(4*1.0627));
     else
@@ -836,7 +865,7 @@ for i=1:length(xPeaks{2})
 end
 for i=1:length(xPeaks{3})
     if i==1
-        displacement3{i}=(1.55/(4*1.0627));
+        displacement3{i}=(1.55/(4*handles.window_val));
     elseif xPeaks{3}(i) < time(minimum_index)
         displacement3{i}=displacement3{i-1}+(1.55/(4*handles.window_val));
     else
