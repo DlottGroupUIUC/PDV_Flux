@@ -212,9 +212,7 @@ i = n;
             handles.peaks_bool =0;
             update_plots(hObject,eventdata,handles);
         case 2
-            [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
-            handles.velocity{i} = handles.velocity{i}./handles.window_val;
-            handles.peaks_bool =1;
+            [handles.velocity{i},handles.displacement{i}] = recalc_peak_data(hObject,eventdata,handles);
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
             update_plots(hObject,eventdata,handles);
@@ -510,9 +508,8 @@ i = n;
             handles.peaks_bool =0;
             update_plots(hObject,eventdata,handles);
         case 2
-            [handles.lineout_time{i},handles.velocity{i},handles.displacement{i},handles.xyPeaks{i}] = peak_det_3(hObject,eventdata,handles);
-            handles.velocity{i} = handles.velocity{i}./handles.window_val;
-            handles.peaks_bool =1;
+            [handles.velocity{i},handles.displacement{i}] = recalc_peak_data(hObject,eventdata,handles);
+            [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             [handles.pressure{i},handles.flux{i},handles.fluence{i}] = calc_derived_data(hObject,eventdata,handles);
             %handles.xPeaks{i} = handles.xypeaks{i}(:,1);handles.yPeaks{i} = handles.xypeaks{i}(:,2);
             update_plots(hObject,eventdata,handles);
@@ -1275,38 +1272,88 @@ tAbsolute=-z+12;    %time correction offset
         error('SaveFunction:NoFiles', 'No files to save');
     end
 %%updating phase minimum
-        function new_velocity = update_phase_min(hObject,eventdata,figure1)
-            n = figure1.list_idx;
-            figure1.velocity{n} = abs(figure1.velocity{n});
-            for i = 1:length(figure1.velocity{n})
-                if figure1.lineout_time{n}(i)<figure1.time{n}(figure1.min_idx{n})
-                    figure1.velocity{n}(i) = figure1.velocity{n}(i);
-                else
-                    figure1.velocity{n}(i) = -1.*figure1.velocity{n}(i);
-                end
-            end
-            new_velocity = figure1.velocity{n};
-            
-            function [new_pressure,new_flux,new_fluence,new_displacement] = update_derived_data(hObject,eventdata,handles)
-                n = handles.list_idx;
-                vel = handles.velocity{n};
-                l_time = handles.lineout_time{n};
-               
-                switch handles.peaks_bool
-                    case 0  %STFT USED
-                         new_displacement = [];
-                         for i = 1:length(l_time)
-                            if l_time(i) < handles.time{n}(handles.t0{n})
-                                new_displacement(i) = 0;
+                function [velocity_final,displacement_s] = recalc_peak_data(hObject,eventdata,handles)
+                    n = handles.list_idx;
+                    xyPeaks = handles.xyPeaks{n};
+                    lineout_time = handles.lineout_time{n};
+                    velocity_final = abs(handles.velocity{n});
+                    minimum_index = handles.min_idx{n};
+                    x0 = handles.t0{n}-4;
+                    time = handles.time{n};
+                    for k = 1:3
+                        idx_0 = length(xyPeaks{k}(xyPeaks{k}(:,1)<=time(x0),1));
+                        xPeaks{k}=xyPeaks{k}(idx_0+1:end,1);
+                        xPeaks_b4{k} = xyPeaks{k}(1:idx_0,1);
+                        zero_pad{k} = zeros(length(xPeaks_b4{k}),1);
+                        
+                    end
+
+                        displacement1=cell(length(xPeaks{1}),1);
+                        displacement2=cell(length(xPeaks{2}),1);
+                        displacement3=cell(length(xPeaks{3}),1);
+                        
+                        
+                        for i=1:length(lineout_time)
+                            if i==1
+                                velocity_final(i) = velocity_final(i);
+                            elseif lineout_time(i)<time(minimum_index)
+                                velocity_final(i) = velocity_final(i);
                             else
-                                new_displacement(i) = new_displacement(i-1)+trapz(l_time(i-1:i),vel(i-1:i));
+                                velocity_final(i) = -1*velocity_final(i);
                             end
                         end
-                    case 1 %Peak finding used
-                        [~,~,new_displacement,~] = peak_det_3(hObject,eventdata,handles);
-                        [new_pressure,new_flux,new_fluence] = calc_derived_data(hObject,eventdata,handles);
-                end
-            
+                        for i=1:length(xPeaks{1})
+                            if i==1
+                                displacement1{i}=(1.55/(4*handles.window_val));
+                            elseif xPeaks{1}(i) < time(minimum_index)
+                                displacement1{i}=displacement1{i-1}+(1.55/(4*1.0627));
+                            else
+                                displacement1{i}=displacement1{i-1}-(1.55/(4*1.0627));
+                            end
+                        end
+                        for i=1:length(xPeaks{2})
+                            if i==1
+                                displacement2{i}=(1.55/(4*handles.window_val));
+                            elseif xPeaks{2}(i) < time(minimum_index)
+                                displacement2{i}=displacement2{i-1}+(1.55/(4*handles.window_val));
+                            else
+                                displacement2{i}=displacement2{i-1}-(1.55/(4*handles.window_val));
+                            end
+                        end
+                        for i=1:length(xPeaks{3})
+                            if i==1
+                                displacement3{i}=(1.55/(4*handles.window_val));
+                            elseif xPeaks{3}(i) < time(minimum_index)
+                                displacement3{i}=displacement3{i-1}+(1.55/(4*handles.window_val));
+                            else
+                                displacement3{i}=displacement3{i-1}-(1.55/(4*handles.window_val));
+                            end
+                        end
+                        temp = cell2mat(displacement1);
+                        displacement1 = [zero_pad{1};temp];
+                        temp = cell2mat(displacement2);
+                        displacement2 = [zero_pad{2};temp];
+                        temp = cell2mat(displacement3);
+                        displacement3 = [zero_pad{3};temp];
+                        displacement_c=cell(3,2);
+                        displacement1 = num2cell(displacement1);
+                        displacement2 = num2cell(displacement2);
+                        displacement3 = num2cell(displacement3);
+                        displacement_c{1,1}=xPeaks{1};
+                        displacement_c{2,1}=xPeaks{2};
+                        displacement_c{3,1}=xPeaks{3};
+                        displacement_c{1,2}=cell2mat(displacement1);
+                        displacement_c{2,2}=cell2mat(displacement2);
+                        displacement_c{3,2}=cell2mat(displacement3);
+                        displacement2c=cell2mat(displacement_c);
+                        displacement2c=sortrows(displacement2c);
+                        displacementTime = displacement2c(:,1);
+                        displacement=displacement2c(:,2);
+                        displacement_s=smooth(displacementTime,displacement,0.1,'rloess');
+                        displacement_s = [0;displacement_s];
+                        guidata(hObject,handles);
+                    
+                    
 %% plots interferogram
     function int = plot_int(hObject,eventdata,handles)
         n=handles.list_idx;
