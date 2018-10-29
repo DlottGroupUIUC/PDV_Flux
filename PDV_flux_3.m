@@ -1283,8 +1283,10 @@ tAbsolute=-z+12;    %time correction offset
                     for k = 1:3
                         idx_0 = length(xyPeaks{k}(xyPeaks{k}(:,1)<=time(x0),1));
                         xPeaks{k}=xyPeaks{k}(idx_0+1:end,1);
+                        %{
                         xPeaks_b4{k} = xyPeaks{k}(1:idx_0,1);
-                        zero_pad{k} = zeros(length(xPeaks_b4{k}),1);
+                        zero_pad{k} = zeros(length(xPeaks_b4{k})-1,1);
+                        %}
                         
                     end
 
@@ -1329,16 +1331,20 @@ tAbsolute=-z+12;    %time correction offset
                                 displacement3{i}=displacement3{i-1}-(1.55/(4*handles.window_val));
                             end
                         end
+                        %{
                         temp = cell2mat(displacement1);
                         displacement1 = [zero_pad{1};temp];
                         temp = cell2mat(displacement2);
                         displacement2 = [zero_pad{2};temp];
                         temp = cell2mat(displacement3);
                         displacement3 = [zero_pad{3};temp];
+                        %}
                         displacement_c=cell(3,2);
+                        %{
                         displacement1 = num2cell(displacement1);
                         displacement2 = num2cell(displacement2);
                         displacement3 = num2cell(displacement3);
+                        %}
                         displacement_c{1,1}=xPeaks{1};
                         displacement_c{2,1}=xPeaks{2};
                         displacement_c{3,1}=xPeaks{3};
