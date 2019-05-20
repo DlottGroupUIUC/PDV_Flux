@@ -282,6 +282,8 @@ switch get(hObject,'Value')
         handles.main_GUI_data.window_val = 1.2669;
     case 5
         handles.main_GUI_data.window_val = 1.0765;
+    case 6
+        handles.main_GUI_data.window_val = 1.00;
 end
 %Window material choice for PDV window correction. Changing these will
 %allow the correction factors to be input into the main function
